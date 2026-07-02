@@ -1,0 +1,41 @@
+{
+  "updatedAt": "2026-07-02T00:18:36.077Z",
+  "results": {
+    "L3": {
+      "winner": "CAN",
+      "score": "0–1"
+    },
+    "R1": {
+      "winner": "BRA",
+      "score": "2–1"
+    },
+    "L1": {
+      "winner": "PAR",
+      "score": "4–5 (3–4 pens)"
+    },
+    "L4": {
+      "winner": "MAR",
+      "score": "3–4 (2–3 pens)"
+    },
+    "R2": {
+      "winner": "NOR",
+      "score": "1–2"
+    },
+    "L2": {
+      "winner": "FRA",
+      "score": "3–0"
+    },
+    "R3": {
+      "winner": "MEX",
+      "score": "2–0"
+    },
+    "R4": {
+      "winner": "ENG",
+      "score": "2–1"
+    },
+    "L8": {
+      "winner": "BEL",
+      "score": "3–2 aet"
+    }
+  }
+}

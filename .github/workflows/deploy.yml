@@ -1,0 +1,67 @@
+# Builds the bracket and publishes it to GitHub Pages.
+#
+# Runs on every push to main, every 30 minutes (so results.json stays
+# fresh during the tournament), and manually via the Actions tab.
+#
+# One-time setup after pushing this repo to GitHub:
+#   1. Repo Settings → Pages → Source: "GitHub Actions"
+#   2. Repo Settings → Secrets and variables → Actions → New repository secret:
+#      Name: FOOTBALL_DATA_KEY, Value: your football-data.org key
+#
+# After July 19, 2026 (the Final), delete the `schedule:` block — no need
+# to keep rebuilding a finished tournament.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pull latest results from football-data.org
+        run: node sync-worldcup.mjs
+        env:
+          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+
+      - name: Build
+        run: npm run build
+        env:
+          # Project sites are served from https://<user>.github.io/<repo>/
+          BASE_PATH: /${{ github.event.repository.name }}/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
