@@ -435,7 +435,7 @@ export default function WorldCupBracket() {
       </div>
 
       <div style={{ textAlign: "center", fontSize: 11, color: COLORS.dim, marginTop: 14 }}>
-        Results come from results.json — regenerate it any time with: FOOTBALL_DATA_KEY=xxx node sync-worldcup.mjs
+        Made by <span style={{ color: COLORS.gold, fontWeight: 700 }}>Mahmoud Khedr</span> · live results courtesy of football-data.org
       </div>
     </div>
   );
