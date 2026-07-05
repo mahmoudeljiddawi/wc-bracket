@@ -276,6 +276,9 @@ export default function WorldCupBracket() {
   // malformed. A genuine elimination — the team can no longer reach that match
   // — stays. This keeps old browsers from showing stale "knocked out" notices.
   useEffect(() => {
+    // Wait until live results are loaded — before that, no team looks
+    // eliminated and we'd wrongly prune genuine notices.
+    if (Object.keys(liveResults).length === 0) return;
     setBusted((old) => {
       const valid = old.filter(
         (b) => b && BASE_MATCHES[b.matchId] && b.picked && !reachableReal(b.matchId).has(b.picked)
