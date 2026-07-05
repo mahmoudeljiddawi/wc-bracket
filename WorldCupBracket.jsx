@@ -270,6 +270,20 @@ export default function WorldCupBracket() {
     setPicks(next);
   }, [liveResults, cleanPicks, realResult, reachableReal]);
 
+  // Heal the stored busted list against current reality: drop any notice whose
+  // team is actually still alive (false positives left by an earlier version,
+  // or a pick that only looked doomed until later results arrived) or that is
+  // malformed. A genuine elimination — the team can no longer reach that match
+  // — stays. This keeps old browsers from showing stale "knocked out" notices.
+  useEffect(() => {
+    setBusted((old) => {
+      const valid = old.filter(
+        (b) => b && BASE_MATCHES[b.matchId] && b.picked && !reachableReal(b.matchId).has(b.picked)
+      );
+      return valid.length === old.length ? old : valid;
+    });
+  }, [liveResults, reachableReal]);
+
   const champion = winnerOf("FIN");
   const totalPickable = Object.keys(BASE_MATCHES).filter((id) => !realResult(id)).length;
   const pickedCount = Object.keys(picks).length;
