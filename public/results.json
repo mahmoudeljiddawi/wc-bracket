@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-02T00:18:36.077Z",
+  "updatedAt": "2026-07-05T14:20:06.382Z",
   "results": {
     "L3": {
       "winner": "CAN",
@@ -36,6 +36,42 @@
     "L8": {
       "winner": "BEL",
       "score": "3–2 aet"
+    },
+    "L7": {
+      "winner": "USA",
+      "score": "2–0"
+    },
+    "L6": {
+      "winner": "ESP",
+      "score": "3–0"
+    },
+    "L5": {
+      "winner": "POR",
+      "score": "2–1"
+    },
+    "R7": {
+      "winner": "SUI",
+      "score": "2–0"
+    },
+    "R5": {
+      "winner": "EGY",
+      "score": "3–5 (2–4 pens)"
+    },
+    "R6": {
+      "winner": "ARG",
+      "score": "3–2 aet"
+    },
+    "R8": {
+      "winner": "COL",
+      "score": "1–0"
+    },
+    "M90": {
+      "winner": "MAR",
+      "score": "0–3"
+    },
+    "M89": {
+      "winner": "FRA",
+      "score": "0–1"
     }
   }
 }

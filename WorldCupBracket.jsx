@@ -137,29 +137,53 @@ export default function WorldCupBracket() {
   const resolveSlot = (slot, p = picks) =>
     typeof slot === "string" ? slot : winnerOf(slot.from, p);
 
+  // Teams that can STILL win match `id`, considering only real results (not
+  // the user's picks). This is how we tell "reality eliminated this team"
+  // apart from "this match simply hasn't been decided yet" — an undecided
+  // upstream match leaves every team in its subtree reachable.
+  const reachableReal = useCallback(
+    (id) => {
+      const real = realResult(id);
+      if (real) return new Set([real.winner]);
+      const occupants = (slot) =>
+        typeof slot === "string" ? new Set([slot]) : reachableReal(slot.from);
+      const m = BASE_MATCHES[id];
+      return new Set([...occupants(m.slots[0]), ...occupants(m.slots[1])]);
+    },
+    [realResult]
+  );
+
+  // Drop picks that can no longer stand, given picks + real results. A pick
+  // survives if its team can still occupy either slot: a decided slot must
+  // equal the team, but an UNDECIDED slot only rules the team out when
+  // reality has eliminated it — otherwise the pick waits for that match.
   const cleanPicks = useCallback(
     (p) => {
       const next = { ...p };
-      const winnerOfIn = (id) => {
+      const winnerIn = (id) => {
         const real = realResult(id);
         return real ? real.winner : next[id] || null;
       };
-      const resolveIn = (slot) =>
-        typeof slot === "string" ? slot : winnerOfIn(slot.from);
+      const canOccupy = (slot, team) => {
+        if (typeof slot === "string") return slot === team;
+        const w = winnerIn(slot.from);
+        return w !== null ? w === team : reachableReal(slot.from).has(team);
+      };
       let changed = true;
       while (changed) {
         changed = false;
         for (const [id, m] of Object.entries(BASE_MATCHES)) {
           if (!next[id]) continue;
           if (realResult(id)) { delete next[id]; changed = true; continue; }
-          const a = resolveIn(m.slots[0]);
-          const b = resolveIn(m.slots[1]);
-          if (next[id] !== a && next[id] !== b) { delete next[id]; changed = true; }
+          const team = next[id];
+          if (!canOccupy(m.slots[0], team) && !canOccupy(m.slots[1], team)) {
+            delete next[id]; changed = true;
+          }
         }
       }
       return next;
     },
-    [realResult]
+    [realResult, reachableReal]
   );
 
   const pick = (matchId, team) =>
@@ -227,11 +251,15 @@ export default function WorldCupBracket() {
     setBusted((old) => {
       const fresh = [];
       for (const id of removed) {
+        const picked = prev[id];
         const real = realResult(id);
-        if (real && real.winner === prev[id]) continue; // pick was right — result just locked in
+        if (real && real.winner === picked) continue; // pick was right — result just locked in
+        // Team still alive in reality → this pick was only orphaned by another
+        // pick change, not a wrong prediction. Drop it silently.
+        if (reachableReal(id).has(picked)) continue;
         const entry = real
-          ? { matchId: id, picked: prev[id], actual: real.winner, score: real.score }
-          : { matchId: id, picked: prev[id] };
+          ? { matchId: id, picked, actual: real.winner, score: real.score }
+          : { matchId: id, picked };
         const dup = old
           .concat(fresh)
           .some((b) => b.matchId === entry.matchId && b.picked === entry.picked);
@@ -240,7 +268,7 @@ export default function WorldCupBracket() {
       return fresh.length ? [...old, ...fresh] : old;
     });
     setPicks(next);
-  }, [liveResults, cleanPicks, realResult]);
+  }, [liveResults, cleanPicks, realResult, reachableReal]);
 
   const champion = winnerOf("FIN");
   const totalPickable = Object.keys(BASE_MATCHES).filter((id) => !realResult(id)).length;
